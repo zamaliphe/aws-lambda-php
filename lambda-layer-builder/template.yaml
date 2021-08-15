@@ -1,0 +1,540 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  AWS CloudFormation template to create customizable PHP runtime in a Lambda Layer - Developed by Saud Albazei.
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: Lambda Layer Configuration
+        Parameters: 
+          - LambdaLayerName
+      - 
+        Label: 
+          default: PHP Configuration
+        Parameters: 
+          - PHPVersion
+      - 
+        Label: 
+          default: PHP Extensions - Leave to default for a minimal setup
+        Parameters: 
+          - PHPExtensionOpenSSL
+          - PHPExtensioncURL
+          - PHPExtensionJSON
+          - PHPExtensionICONV
+          - PHPExtensionLibXML
+          - PHPExtensionFilter
+          - PHPExtensionSimpleXML
+          - PHPExtensionPhar
+          - PHPExtensionenBcmath
+          - PHPExtensionCtype
+          - PHPExtensionDom
+          - PHPExtensionExif
+          - PHPExtensionFileinfo
+          - PHPExtensionFTP
+          - PHPExtensionGettext
+          - PHPExtensionMySQLi
+          - PHPExtensionMySQLND
+          - PHPExtensionOPCache
+          - PHPExtensionpcntl
+          - PHPExtensionPDO
+          - PHPExtensionPDOSQLite
+          - PHPExtensionPDOMySQL
+          - PHPExtensionPosix
+          - PHPExtensionReadline
+          - PHPExtensionSession
+          - PHPExtensionSOAP
+          - PHPExtensionSockets
+          - PHPExtensionSQLite3
+          - PHPExtensionTokenizer
+          - PHPExtensionXML
+          - PHPExtensionXMLReader
+          - PHPExtensionXMLWriter
+          - PHPExtensionZLib
+Parameters:
+  LambdaLayerName:
+    Description: Enter the Lambda Layer name
+    Type: String
+    Default: base-layer
+    AllowedPattern: ^[a-zA-Z0-9-_]*$
+    ConstraintDescription: You must enter a valid layer name.
+  PHPVersion:
+    Description: Choose the PHP version you would like to compile
+    Type: String
+    Default: php-8.0.9
+    AllowedValues:
+      - php-8.0.9
+      - php-7.4.22
+  PHPExtensionOpenSSL:
+    Description: Include OpenSSL (Required)
+    Type: String
+    Default: --with-openssl
+    AllowedValues:
+      - --with-openssl
+      - --without-openssl
+  PHPExtensioncURL:
+    Description: Include cURL (Required)
+    Type: String
+    Default: --with-curl
+    AllowedValues:
+      - --with-curl
+      - --without-curl
+  PHPExtensionJSON:
+    Description: Enable JSON (Required)
+    Type: String
+    Default: --enable-json
+    AllowedValues:
+      - --enable-json
+      - --disable-json
+  PHPExtensionICONV:
+    Description: Include ICONV (Required for the AWS SDK)
+    Type: String
+    Default: --with-iconv
+    AllowedValues:
+      - --with-iconv
+      - --without-iconv
+  PHPExtensionLibXML:
+    Description: Include LibXML (Required for the AWS SDK)
+    Type: String
+    Default: --with-libxml
+    AllowedValues:
+      - --with-libxml
+      - --without-libxml
+  PHPExtensionFilter:
+    Description: Enable Filter (Required for the AWS SDK)
+    Type: String
+    Default: --enable-filter
+    AllowedValues:
+      - --enable-filter
+      - --disable-filter
+  PHPExtensionSimpleXML:
+    Description: Enable SimpleXML (Required for the AWS SDK)
+    Type: String
+    Default: --enable-simplexml
+    AllowedValues:
+      - --enable-simplexml
+      - --disable-simplexml
+  PHPExtensionPhar:
+    Description: Enable Phar
+    Type: String
+    Default: --disable-phar
+    AllowedValues:
+      - --enable-phar
+      - --disable-phar
+  PHPExtensionenBcmath:
+    Description: Enable bcmath
+    Type: String
+    Default: --disable-bcmath
+    AllowedValues:
+      - --enable-bcmath
+      - --disable-bcmath
+  PHPExtensionCtype:
+    Description: Enable ctype
+    Type: String
+    Default: --disable-ctype
+    AllowedValues:
+      - --enable-ctype
+      - --disable-ctype
+  PHPExtensionDom:
+    Description: Enable dom
+    Type: String
+    Default: --disable-dom
+    AllowedValues:
+      - --enable-dom
+      - --disable-dom
+  PHPExtensionExif:
+    Description: Enable exif
+    Type: String
+    Default: --disable-exif
+    AllowedValues:
+      - --enable-exif
+      - --disable-exif
+  PHPExtensionFileinfo:
+    Description: Enable fileinfo
+    Type: String
+    Default: --disable-fileinfo
+    AllowedValues:
+      - --enable-fileinfo
+      - --disable-fileinfo
+  PHPExtensionFTP:
+    Description: Enable FTP
+    Type: String
+    Default: --disable-ftp
+    AllowedValues:
+      - --enable-ftp
+      - --disable-ftp
+  PHPExtensionGettext:
+    Description: With Gettext
+    Type: String
+    Default: --without-gettext
+    AllowedValues:
+      - --with-gettext
+      - --without-gettext
+  PHPExtensionMySQLi:
+    Description: With MySQLi
+    Type: String
+    Default: --without-mysqli
+    AllowedValues:
+      - --with-mysqli
+      - --without-mysqli
+  PHPExtensionMySQLND:
+    Description: Enable MySQLND
+    Type: String
+    Default: --disable-mysqlnd
+    AllowedValues:
+      - --enable-mysqlnd
+      - --disable-mysqlnd
+  PHPExtensionOPCache:
+    Description: Enable OPCache
+    Type: String
+    Default: --disable-opcache
+    AllowedValues:
+      - --enable-opcache
+      - --disable-opcache
+  PHPExtensionpcntl:
+    Description: Enable pcntl
+    Type: String
+    Default: --disable-pcntl
+    AllowedValues:
+      - --enable-pcntl
+      - --disable-pcntl
+  PHPExtensionPDO:
+    Description: Enable PDO
+    Type: String
+    Default: --disable-pdo
+    AllowedValues:
+      - --enable-pdo
+      - --disable-pdo
+  PHPExtensionPDOSQLite:
+    Description: With pdo_sqlite
+    Type: String
+    Default: --without-pdo_sqlite
+    AllowedValues:
+      - --with-pdo_sqlite
+      - --without-pdo_sqlite
+  PHPExtensionPDOMySQL:
+    Description: With pdo_mysql
+    Type: String
+    Default: --without-pdo_mysql
+    AllowedValues:
+      - --with-pdo_mysql
+      - --without-pdo_mysql
+  PHPExtensionPosix:
+    Description: Enable posix
+    Type: String
+    Default: --disable-posix
+    AllowedValues:
+      - --enable-posix
+      - --disable-posix
+  PHPExtensionReadline:
+    Description: With readline
+    Type: String
+    Default: --without-readline
+    AllowedValues:
+      - --with-readline
+      - --without-readline
+  PHPExtensionSession:
+    Description: Enable session
+    Type: String
+    Default: --disable-session
+    AllowedValues:
+      - --enable-session
+      - --disable-session
+  PHPExtensionSOAP:
+    Description: Enable SOAP
+    Type: String
+    Default: --disable-soap
+    AllowedValues:
+      - --enable-soap
+      - --disable-soap
+  PHPExtensionSockets:
+    Description: Enable Sockets
+    Type: String
+    Default: --disable-sockets
+    AllowedValues:
+      - --enable-sockets
+      - --disable-sockets
+  PHPExtensionSQLite3:
+    Description: With SQLite3
+    Type: String
+    Default: --without-sqlite3
+    AllowedValues:
+      - --with-sqlite3
+      - --without-sqlite3
+  PHPExtensionTokenizer:
+    Description: Enable Tokenizer
+    Type: String
+    Default: --disable-tokenizer
+    AllowedValues:
+      - --enable-tokenizer
+      - --disable-tokenizer
+  PHPExtensionXML:
+    Description: Enable XML
+    Type: String
+    Default: --disable-xml
+    AllowedValues:
+      - --enable-xml
+      - --disable-xml
+  PHPExtensionXMLReader:
+    Description: Enable XMLReader
+    Type: String
+    Default: --disable-xmlreader
+    AllowedValues:
+      - --enable-xmlreader
+      - --disable-xmlreader
+  PHPExtensionXMLWriter:
+    Description: Enable XMLWriter
+    Type: String
+    Default: --disable-xmlwriter
+    AllowedValues:
+      - --enable-xmlwriter
+      - --disable-xmlwriter
+  PHPExtensionZLib:
+    Description: With zlib
+    Type: String
+    Default: --without-zlib
+    AllowedValues:
+      - --with-zlib
+      - --without-zlib
+Mappings:
+  AWSRegionAMI:
+    af-south-1:
+      AMI: ami-0edec67949fd25461
+    eu-north-1:
+      AMI: ami-0d441f5643da997cb
+    ap-south-1:
+      AMI: ami-04db49c0fb2215364
+    eu-west-3:
+      AMI: ami-0d49cec198762b78c
+    eu-west-2:
+      AMI: ami-0d26eb3972b7f8c96
+    eu-south-1:
+      AMI: ami-0fce326033a239d55
+    eu-west-1:
+      AMI: ami-02b4e72b17337d6c1
+    ap-northeast-3:
+      AMI: ami-0e787554e61105680
+    ap-northeast-2:
+      AMI: ami-0a0de518b1fc4524c
+    me-south-1:
+      AMI: ami-004b77593bd476317
+    ap-northeast-1:
+      AMI: ami-09ebacdc178ae23b7
+    sa-east-1:
+      AMI: ami-0f8243a5175208e08
+    ca-central-1:
+      AMI: ami-02f84cf47c23f1769
+    ap-east-1:
+      AMI: ami-0a2115f8cc0a3956b
+    ap-southeast-1:
+      AMI: ami-0f511ead81ccde020
+    ap-southeast-2:
+      AMI: ami-0aab712d6363da7f9
+    eu-central-1:
+      AMI: ami-0453cb7b5f2b7fca2
+    us-east-1:
+      AMI: ami-0c2b8ca1dad447f8a
+    us-east-2:
+      AMI: ami-0443305dabd4be2bc
+    us-west-1:
+      AMI: ami-04b6c97b14c54de18
+    us-west-2:
+      AMI: ami-083ac7c7ecf9bb9b0
+Resources:
+  IAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-EC2-Role
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: EC2AWSCLIAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:CreateFunction
+                  - lambda:PublishLayerVersion
+                Resource: '*'
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-EC2-Role
+  IAMInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref IAMRole
+      InstanceProfileName: !Sub ${AWS::StackName}-EC2-Profile
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t3.small
+      ImageId: !FindInMap
+        - AWSRegionAMI
+        - !Ref AWS::Region
+        - AMI
+      IamInstanceProfile: !Ref IAMInstanceProfile
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-PHP-Compiler-Instance
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
+          yum update -y
+          yum install autoconf bison gcc gcc-c++ libcurl-devel libxml2-devel openssl-devel libpng-devel libwebp-devel libjpeg-devel sqlite-devel oniguruma-devel readline-devel libxslt-devel -y
+          curl -O https://www.php.net/distributions/${PHPVersion}.tar.gz 
+          tar -xvf ${PHPVersion}.tar.gz && cd ${PHPVersion}
+          /${PHPVersion}/configure --disable-all --disable-cgi ${PHPExtensionOpenSSL} ${PHPExtensioncURL} ${PHPExtensionICONV} ${PHPExtensionLibXML} ${PHPExtensionJSON} ${PHPExtensionPhar} ${PHPExtensionFilter} ${PHPExtensionSimpleXML} ${PHPExtensionenBcmath} ${PHPExtensionCtype} ${PHPExtensionDom} ${PHPExtensionExif} ${PHPExtensionFileinfo} ${PHPExtensionFTP} ${PHPExtensionGettext} ${PHPExtensionMySQLi} ${PHPExtensionMySQLND} ${PHPExtensionOPCache} ${PHPExtensionpcntl} ${PHPExtensionPDO} ${PHPExtensionPDOSQLite} ${PHPExtensionPDOMySQL} ${PHPExtensionPosix} ${PHPExtensionReadline} ${PHPExtensionSession} ${PHPExtensionSOAP} ${PHPExtensionSockets} ${PHPExtensionSQLite3} ${PHPExtensionTokenizer} ${PHPExtensionXML} ${PHPExtensionXMLReader} ${PHPExtensionXMLWriter} ${PHPExtensionZLib}
+          if [ $? != 0 ]; then
+            /opt/aws/bin/cfn-signal -s 'false' --resource EC2Instance --stack ${AWS::StackName} --region ${AWS::Region}
+            exit
+          fi
+          make -j2
+          if [ $? != 0 ]; then
+            /opt/aws/bin/cfn-signal -s 'false' --resource EC2Instance --stack ${AWS::StackName} --region ${AWS::Region}
+            exit
+          fi
+          mkdir /base-layer /base-layer/bin
+          cp /${PHPVersion}/sapi/cli/php /base-layer/bin
+          cat << 'EOF' > /base-layer/bootstrap
+          #!/bin/sh
+          set -euo pipefail
+          while true; do /opt/bin/php "/opt/bootstrap.php" 2>&1; done
+          EOF
+          cat << 'EOF' > /base-layer/bootstrap.php
+          <?php
+          /* bootstrap -- This script is the main bootstrap script that
+          communicates with the Lambda Runtime API to initialize the
+          execution environment and handle invocation requests. This
+          has been tested only on PHP 7.4.* and PHP 8.0.* and requires
+          the following PHP extensions to function properly, PHP Core, 
+          PHP cURL and PHP OpenSSL. Other than that you can add more
+          extensions as necessary for your function and dependencies,
+          but try to keep the PHP runtime as lean as possible for
+          optimal performance. Author: Saud Albazei. */
+
+          /* Be verbose and display all errors and warnings. */
+          ini_set('display_errors', 1);
+          error_reporting(E_ALL);
+
+          /* Define constants. */
+          define('LAMBDA_TASK_ROOT', $_ENV['LAMBDA_TASK_ROOT']);
+          define('LAMBDA_RUNTIME_API_ENDPOINT', 'http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/');
+
+          /* Import the function handler file. */
+          try {
+              require LAMBDA_TASK_ROOT . '/index.php';
+          } catch (Throwable $e) {
+              $init_error = error_response($e->getMessage());
+          }
+
+          /* Simple function to handle HTTP requests using cURL. */
+          function http_request($type, $url, $payload = null)
+          {
+              $ch = curl_init();
+              curl_setopt($ch, CURLOPT_URL, $url);
+              curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+              curl_setopt($ch, CURLOPT_HEADER, true);
+              if ($type == 'POST') {
+                  curl_setopt($ch, CURLOPT_POST, true);
+                  curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+              }
+              $response = curl_exec($ch);
+              $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+              curl_close($ch);
+              return [
+                  'headers' => get_headers_from_curl_response($response),
+                  'body' => substr($response, $header_size)
+              ];
+          }
+
+          /* Simple function to parse headers from the cURL response. */
+          function get_headers_from_curl_response($response)
+          {
+              $headers = array();
+              $header_text = substr($response, false, strpos($response, "\r\n\r\n"));
+              foreach (explode("\r\n", $header_text) as $i => $line)
+                  if ($i === 0)
+                      $headers['http_code'] = $line;
+                  else {
+                      list($key, $value) = explode(': ', $line);
+                      $headers[$key] = $value;
+                  }
+              return $headers;
+          }
+
+          /* Build the error response object. */
+          function error_response($error_message)
+          {
+              return [
+                  'statusCode' => 500,
+                  'body' => $error_message
+              ];
+          }
+
+          /* Encode the response into a JSON object and send 
+          that response to the Lambda Runtime API. */
+          function send_response($invocation_id, $response)
+          {
+              $response_type = ($response['statusCode'] == 200) ? '/response' : '/error';
+              return http_request('POST', LAMBDA_RUNTIME_API_ENDPOINT . $invocation_id . $response_type, json_encode($response));
+          }
+
+          /*  Trigger the Lambda function. */
+          function trigger_handler($request)
+          {
+              try {
+                  return handler(json_decode($request['body']));
+              } catch (Throwable $e) {
+                  return error_response($e->getMessage());
+              }
+          }
+
+          /* The main function that processes each event. */
+          function process_request()
+          {
+              $request = http_request('GET', LAMBDA_RUNTIME_API_ENDPOINT . 'next');
+              $response = $GLOBALS['init_error'] ?? trigger_handler($request);
+              return send_response($request['headers']['Lambda-Runtime-Aws-Request-Id'], $response);
+          }
+
+          /* Infinite loop to get new requests and processes them and repeats. 
+          The Lambda Runtime API will keep the HTTP request on hold until
+          it receives a new request then it returns a response to the waiting
+          request immediately for processing */
+          while (true)
+          {
+              process_request();
+          /*  It is highly recommended to carefully manage this infinite loop against memory leaks.
+              The first option is to exit when current memory consumption is over 80%. The second
+              one is set a finite number to the loop.
+              if (memory_get_peak_usage(true) > $_ENV['AWS_LAMBDA_FUNCTION_MEMORY_SIZE']*1024*1024*0.8)
+                  exit("Execution environment ran out of memory");
+              if($current_loop >= $max_loops)
+                  exit("Number of loops exceeded the maximum allowed"); */   
+          }
+          EOF
+          chmod 755 /base-layer/bootstrap
+          cd /base-layer/
+          zip base-layer.zip bootstrap bootstrap.php bin/php
+          aws lambda publish-layer-version --layer-name ${LambdaLayerName} --zip-file fileb://base-layer.zip --compatible-runtimes provided.al2 --region ${AWS::Region}
+          if [ $? != 0 ]; then
+            /opt/aws/bin/cfn-signal -s 'false' --resource EC2Instance --stack ${AWS::StackName} --region ${AWS::Region}
+            exit
+          fi
+          /opt/aws/bin/cfn-signal -s 'true' --resource EC2Instance --stack ${AWS::StackName} --region ${AWS::Region}
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
+Outputs:
+  LambdaLayer:
+    Description: The PHP layer has been published successfully. Feel free to delete this stack as it is no longer needed. Deleting this stack will not delete the created Lambda layer.
+    Value: !Ref LambdaLayerName

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+set -euo pipefail
+
+while true; do /opt/bin/php "/opt/bootstrap.php" 2>&1; done

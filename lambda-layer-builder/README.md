@@ -29,6 +29,7 @@ function handler($event) {
 
 }
 ```
+Note: the file name and handler function name will need to match Lambda's handler configuration. For example, if the handler configuration is set to `hello.handler`, then your file should be named `hello.php` and the function should be named `handler()`.
 
 If you have dependencies such as composer packages in your code, compress the `vendor/*` directory and upload it to Lambda as a new layer. Then add the layer to the same Lambda function and you can use it as follows:
 

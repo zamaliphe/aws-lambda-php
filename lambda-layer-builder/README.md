@@ -1,4 +1,5 @@
 # Lambda Layer Builder
+![PHP Runtime Lambda Layer Builder](https://github.com/albazei/aws-lambda-php/blob/main/assets/PHP-Runtime-Layer-Builder.png?raw=true)
 Use this Cloudformation template to automatically build a PHP runtime layer with the desired PHP version and extensions. This template will give you these options to select from upon stack creation and will automatically create all necessary resources to download, configure, compile and deploy the PHP runtime in a Lambda Layer. After stack creation is successful, you can delete the stack and keep the newly created Lambda Layer.
 
 **Steps**

@@ -16,10 +16,12 @@ error_reporting(E_ALL);
 /* Define constants. */
 define('LAMBDA_TASK_ROOT', $_ENV['LAMBDA_TASK_ROOT']);
 define('LAMBDA_RUNTIME_API_ENDPOINT', 'http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/');
+define('LAMBDA_HANDLER_FILE', explode('.', $_ENV['_HANDLER'])[0] . '.php');
+define('LAMBDA_HANDLER_FUNCTION', explode('.', $_ENV['_HANDLER'])[1]);
 
 /* Import the function handler file. */
 try {
-    require LAMBDA_TASK_ROOT . '/index.php';
+    require LAMBDA_TASK_ROOT . '/' . LAMBDA_HANDLER_FILE;
 } catch (Throwable $e) {
     $init_error = error_response($e->getMessage());
 }
@@ -79,8 +81,11 @@ function send_response($invocation_id, $response)
 /*  Trigger the Lambda function. */
 function trigger_handler($request)
 {
+    if(!function_exists(LAMBDA_HANDLER_FUNCTION)){
+        return error_response("Handler function " . LAMBDA_HANDLER_FUNCTION . "() is not defined.");
+    }
     try {
-        return handler(json_decode($request['body']));
+        return call_user_func(LAMBDA_HANDLER_FUNCTION, json_decode($request['body']));
     } catch (Throwable $e) {
         return error_response($e->getMessage());
     }

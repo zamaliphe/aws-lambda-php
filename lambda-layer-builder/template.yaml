@@ -9,14 +9,11 @@ Metadata:
           default: Lambda Layer Configuration
         Parameters: 
           - LambdaLayerName
-      - 
-        Label: 
-          default: PHP Configuration
-        Parameters: 
           - PHPVersion
+          - Architecture
       - 
         Label: 
-          default: PHP Extensions - Leave to default for a minimal setup
+          default: PHP Extensions (Leave to default for a minimal setup)
         Parameters: 
           - PHPExtensionOpenSSL
           - PHPExtensioncURL
@@ -26,6 +23,7 @@ Metadata:
           - PHPExtensionFilter
           - PHPExtensionSimpleXML
           - PHPExtensionPhar
+          - PHPExtensionRedis
           - PHPExtensionenBcmath
           - PHPExtensionCtype
           - PHPExtensionDom
@@ -58,13 +56,20 @@ Parameters:
     Default: base-layer
     AllowedPattern: ^[a-zA-Z0-9-_]*$
     ConstraintDescription: You must enter a valid layer name.
+  Architecture:
+    Description: Choose the instruction set architecture you want for your function code.
+    Type: String
+    Default: x86
+    AllowedValues:
+      - x86
+      - ARM
   PHPVersion:
     Description: Choose the PHP version you would like to compile
     Type: String
-    Default: php-8.0.9
+    Default: php-8.0.11
     AllowedValues:
-      - php-8.0.9
-      - php-7.4.22
+      - php-8.0.11
+      - php-7.4.24
   PHPExtensionOpenSSL:
     Description: Include OpenSSL (Required)
     Type: String
@@ -121,6 +126,13 @@ Parameters:
     AllowedValues:
       - --enable-phar
       - --disable-phar
+  PHPExtensionRedis:
+    Description: Enable Redis
+    Type: String
+    Default: --disable-redis
+    AllowedValues:
+      - --enable-redis
+      - --disable-redis
   PHPExtensionenBcmath:
     Description: Enable bcmath
     Type: String
@@ -297,49 +309,75 @@ Parameters:
       - --with-zlib
       - --without-zlib
 Mappings:
+  EC2Instance:
+    x86: 
+      InstanceType: t3.small
+    ARM: 
+      InstanceType: t4g.small
   AWSRegionAMI:
     af-south-1:
-      AMI: ami-0edec67949fd25461
+      x86: ami-03590d67411bbd24e
+      ARM: RegionNotSupported
     eu-north-1:
-      AMI: ami-0d441f5643da997cb
+      x86: ami-0f0b4cb72cf3eadf3
+      ARM: ami-039462d20158baacd
     ap-south-1:
-      AMI: ami-04db49c0fb2215364
+      x86: ami-0a23ccb2cdd9286bb
+      ARM: ami-080c1148a83cea662
     eu-west-3:
-      AMI: ami-0d49cec198762b78c
+      x86: ami-072056ff9d3689e7b
+      ARM: ami-01815b727d927256f
     eu-west-2:
-      AMI: ami-0d26eb3972b7f8c96
+      x86: ami-0dbec48abfe298cab
+      ARM: ami-000f10227a4a749fc
     eu-south-1:
-      AMI: ami-0fce326033a239d55
+      x86: ami-043c883e65558daa0
+      ARM: ami-011d768b31b27844d
     eu-west-1:
-      AMI: ami-02b4e72b17337d6c1
+      x86: ami-0d1bf5b68307103c2
+      ARM: ami-0585cc9245d7565e4
     ap-northeast-3:
-      AMI: ami-0e787554e61105680
+      x86: ami-09ec82600a05bc23a
+      ARM: RegionNotSupported
     ap-northeast-2:
-      AMI: ami-0a0de518b1fc4524c
+      x86: ami-08c64544f5cfcddd0
+      ARM: ami-0f0005da8f9612974
     me-south-1:
-      AMI: ami-004b77593bd476317
+      x86: ami-0cc423da78c883d64
+      ARM: ami-0b61e3d1934f5996e
     ap-northeast-1:
-      AMI: ami-09ebacdc178ae23b7
+      x86: ami-02892a4ea9bfa2192
+      ARM: ami-09c4848c1c6c4b09b
     sa-east-1:
-      AMI: ami-0f8243a5175208e08
+      x86: ami-09b9b17384f68fd7c
+      ARM: ami-001314db3c7a1274e
     ca-central-1:
-      AMI: ami-02f84cf47c23f1769
+      x86: ami-0e2407e55b9816758
+      ARM: ami-08e4cc0f2d564c300
     ap-east-1:
-      AMI: ami-0a2115f8cc0a3956b
+      x86: ami-0de9d09f41c5e334c
+      ARM: ami-035b0c1eedad4e78a
     ap-southeast-1:
-      AMI: ami-0f511ead81ccde020
+      x86: ami-082105f875acab993
+      ARM: ami-0674db352b457179a
     ap-southeast-2:
-      AMI: ami-0aab712d6363da7f9
+      x86: ami-0210560cedcb09f07
+      ARM: ami-0e123196f540089e9
     eu-central-1:
-      AMI: ami-0453cb7b5f2b7fca2
+      x86: ami-07df274a488ca9195
+      ARM: ami-07d397b752b4016f8
     us-east-1:
-      AMI: ami-0c2b8ca1dad447f8a
+      x86: ami-087c17d1fe0178315
+      ARM: ami-029c64b3c205e6cce
     us-east-2:
-      AMI: ami-0443305dabd4be2bc
+      x86: ami-00dfe2c7ce89a450b
+      ARM: ami-031dea1a744251b51
     us-west-1:
-      AMI: ami-04b6c97b14c54de18
+      x86: ami-011996ff98de391d1
+      ARM: ami-0d455ad8eccc5556a
     us-west-2:
-      AMI: ami-083ac7c7ecf9bb9b0
+      x86: ami-0c2d06d50ce30b442
+      ARM: ami-0bfd41cde731af7cb
 Resources:
   IAMRole:
     Type: AWS::IAM::Role
@@ -375,11 +413,14 @@ Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
     Properties:
-      InstanceType: t3.small
+      InstanceType:  !FindInMap
+        - EC2Instance
+        - !Ref Architecture
+        - InstanceType
       ImageId: !FindInMap
         - AWSRegionAMI
         - !Ref AWS::Region
-        - AMI
+        - !Ref Architecture
       IamInstanceProfile: !Ref IAMInstanceProfile
       Tags:
         - Key: Name
@@ -392,7 +433,7 @@ Resources:
           yum install autoconf bison gcc gcc-c++ libcurl-devel libxml2-devel openssl-devel libpng-devel libwebp-devel libjpeg-devel sqlite-devel oniguruma-devel readline-devel libxslt-devel -y
           curl -O https://www.php.net/distributions/${PHPVersion}.tar.gz 
           tar -xvf ${PHPVersion}.tar.gz && cd ${PHPVersion}
-          /${PHPVersion}/configure --disable-all --disable-cgi ${PHPExtensionOpenSSL} ${PHPExtensioncURL} ${PHPExtensionICONV} ${PHPExtensionLibXML} ${PHPExtensionJSON} ${PHPExtensionPhar} ${PHPExtensionFilter} ${PHPExtensionSimpleXML} ${PHPExtensionenBcmath} ${PHPExtensionCtype} ${PHPExtensionDom} ${PHPExtensionExif} ${PHPExtensionFileinfo} ${PHPExtensionFTP} ${PHPExtensionGettext} ${PHPExtensionMySQLi} ${PHPExtensionMySQLND} ${PHPExtensionOPCache} ${PHPExtensionpcntl} ${PHPExtensionPDO} ${PHPExtensionPDOSQLite} ${PHPExtensionPDOMySQL} ${PHPExtensionPosix} ${PHPExtensionReadline} ${PHPExtensionSession} ${PHPExtensionSOAP} ${PHPExtensionSockets} ${PHPExtensionSQLite3} ${PHPExtensionTokenizer} ${PHPExtensionXML} ${PHPExtensionXMLReader} ${PHPExtensionXMLWriter} ${PHPExtensionZLib}
+          /${PHPVersion}/configure --disable-all --disable-cgi --enable-cli --disable-phpdbg --disable-phpdbg-webhelper --with-config-file-path=/var/task/conf.d --with-config-file-scan-dir=/var/task/conf.d ${PHPExtensionOpenSSL} ${PHPExtensioncURL} ${PHPExtensionICONV} ${PHPExtensionLibXML} ${PHPExtensionJSON} ${PHPExtensionPhar} ${PHPExtensionFilter} ${PHPExtensionSimpleXML} ${PHPExtensionRedis} ${PHPExtensionenBcmath} ${PHPExtensionCtype} ${PHPExtensionDom} ${PHPExtensionExif} ${PHPExtensionFileinfo} ${PHPExtensionFTP} ${PHPExtensionGettext} ${PHPExtensionMySQLi} ${PHPExtensionMySQLND} ${PHPExtensionOPCache} ${PHPExtensionpcntl} ${PHPExtensionPDO} ${PHPExtensionPDOSQLite} ${PHPExtensionPDOMySQL} ${PHPExtensionPosix} ${PHPExtensionReadline} ${PHPExtensionSession} ${PHPExtensionSOAP} ${PHPExtensionSockets} ${PHPExtensionSQLite3} ${PHPExtensionTokenizer} ${PHPExtensionXML} ${PHPExtensionXMLReader} ${PHPExtensionXMLWriter} ${PHPExtensionZLib}
           if [ $? != 0 ]; then
             /opt/aws/bin/cfn-signal -s 'false' --resource EC2Instance --stack ${AWS::StackName} --region ${AWS::Region}
             exit
@@ -428,10 +469,12 @@ Resources:
           /* Define constants. */
           define('LAMBDA_TASK_ROOT', $_ENV['LAMBDA_TASK_ROOT']);
           define('LAMBDA_RUNTIME_API_ENDPOINT', 'http://' . $_ENV['AWS_LAMBDA_RUNTIME_API'] . '/2018-06-01/runtime/invocation/');
+          define('LAMBDA_HANDLER_FILE', explode('.', $_ENV['_HANDLER'])[0] . '.php');
+          define('LAMBDA_HANDLER_FUNCTION', explode('.', $_ENV['_HANDLER'])[1]);
 
           /* Import the function handler file. */
           try {
-              require LAMBDA_TASK_ROOT . '/index.php';
+              require LAMBDA_TASK_ROOT . '/' . LAMBDA_HANDLER_FILE;
           } catch (Throwable $e) {
               $init_error = error_response($e->getMessage());
           }
@@ -491,8 +534,11 @@ Resources:
           /*  Trigger the Lambda function. */
           function trigger_handler($request)
           {
+              if(!function_exists(LAMBDA_HANDLER_FUNCTION)){
+                  return error_response("Handler function " . LAMBDA_HANDLER_FUNCTION . "() is not defined.");
+              }
               try {
-                  return handler(json_decode($request['body']));
+                  return call_user_func(LAMBDA_HANDLER_FUNCTION, json_decode($request['body']));
               } catch (Throwable $e) {
                   return error_response($e->getMessage());
               }
